@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+
+require 'epitrack'
+require 'optparse'
+require 'shellwords'
+
+opts = {}
+OptionParser.new do |opt|
+  opt.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options] "
+
+  opt.on('-l', '--list',
+      'List unfinished episodes') do
+    opts[:list] = true
+  end
+
+  opt.on('', '--list-all',
+      'List all episodes') do
+    opts[:list_all] = true
+  end
+
+  opt.on('-n', '--list-names',
+      'List names of series') do
+    opts[:list_names] = true
+  end
+
+  opt.on('-a:', '--add=PATH',
+      'Add path as new series') do |path|
+    opts[:add] = path
+  end
+
+  opt.on('--db-file=PATH',
+      'Specify database file') do |val|
+    opts[:db_file] = val
+  end
+
+  opt.parse!(ARGV)
+end
+
+DEFAULT_DB_FILE = File.join(ENV['HOME'], '.epitrack.csv')
+
+tracker = Epitrack.new(opts[:db_file] || DEFAULT_DB_FILE)
+
+if opts[:list]
+  str = tracker.tabulate
+  puts str unless str.empty?
+  exit 0
+elsif opts[:list_all]
+  str = tracker.tabulate { true }
+  puts str unless str.empty?
+  exit 0
+elsif opts[:list_names]
+  puts tracker.series.map(&:name)
+  exit 0
+elsif opts[:add]
+  name = ARGV.first
+
+  if tracker[name]
+    STDERR.puts "Series of same name already exists"
+    exit 1
+  end
+
+  dir = Shellwords.escape(opts[:add])
+  template, first_ep, last_ep = Epitrack::Parser.parse(Dir[File.join(dir, '*')])
+  series = tracker.add(name, template, first_ep, last_ep)
+else
+  name = ARGV.first
+end
+
+series = tracker[name]
+filepath = series.current_episode_path
+series.watch_current!
+tracker.database.write!
+
+Kernel.exec("mplayer -fs '#{filepath}'")

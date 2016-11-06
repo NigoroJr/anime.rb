@@ -1,0 +1,39 @@
+#compdef epitrack
+
+_epitrack() {
+  local context
+  local curcontext="$curcontext"
+  local state
+  local line
+
+  local -a series
+  local -a flags
+
+  series=(`_call_program path epitrack -n`)
+  flags=(
+    '(-)'{-l,--list}'[list watched series]'
+    '(-)--list-all[list all series]'
+    '(-)'{-n,--list-names}'[list only names]'
+    '(-)'{-a,--add}'[add a new episode]: :->add'
+    '(-)-h[show help]'
+  )
+
+  _arguments \
+      "${flags[@]}" \
+      "1: :($series)" \
+      && ret=0
+
+  case "$state" in
+      add)
+          _arguments \
+              '*:files:_files'
+          ret=0
+          ;;
+  esac
+
+  return ret
+}
+
+_epitrack "$@"
+
+# vim:ft=zsh
