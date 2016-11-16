@@ -32,9 +32,7 @@ class Epitrack
       # Change this to '42 something.mp4' (remove the " END" part)
       pat = /(\d+)\s*\b(?:#{IGNORE_WORDS.join('|')})\b/
       has_end_in_template = filenames.any? { |fn| fn =~ pat }
-      if has_end_in_template
-        filenames.map! { |fn| fn.sub(pat, '\1') }
-      end
+      filenames.map! { |fn| fn.sub(pat, '\1') } if has_end_in_template
 
       (fn1, fn2) = similar_two(filenames, 2)
 
@@ -102,7 +100,9 @@ class Epitrack
     #
     # @return [Integer, Integer] the first and last episode numbers.
     def find_first_last(template)
-      raise "Template must contain a #{PLACEHOLDER}" unless template.include?(PLACEHOLDER)
+      unless template.include?(PLACEHOLDER)
+        raise "Template must contain a #{PLACEHOLDER}"
+      end
 
       pattern = Shellwords.escape(template) \
         .sub(Shellwords.escape(Epitrack::Parser::PLACEHOLDER), '*') \
@@ -142,9 +142,10 @@ class Epitrack
         next if a.length != b.length
 
         dist = Levenshtein.distance(a, b)
-        if dist == best_dist
-          return [a, b]
-        elsif dist < best_so_far
+
+        return [a, b] if dist == best_dist
+
+        if dist < best_so_far
           best_pair = [a, b]
           best_so_far = dist
         end

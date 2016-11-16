@@ -114,10 +114,14 @@ class Epitrack
       if opts[:expand_glob]
         path = Shellwords.escape(path)
         # PLACEHOLDER_GLOB in path is also escaped
-        pattern = path.sub(Shellwords.escape(Epitrack::Parser::PLACEHOLDER_GLOB), '*')
+        escaped_ph = Shellwords.escape(Epitrack::Parser::PLACEHOLDER_GLOB)
+        pattern = path.sub(escaped_ph, '*')
         files = Dir[pattern]
         if files.size != 1
-          STDERR.puts "Non-single candidates for #{pattern}:\n#{files.join("\n")}"
+          STDERR.puts <<-EOS.undent
+          Non-single candidates for #{pattern}:
+          #{files.join("\n")}
+          EOS
           raise 'Ambiguous path'
         end
 
