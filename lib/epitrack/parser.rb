@@ -51,8 +51,10 @@ class Epitrack
         .select { |fn| fn.size == fn1.size } \
         # Ignore everything up to the placeholder
         .map { |fn| fn[placeholder_idx..-1] } \
-        # Filenames should now begin with episode numbers
+        # Filenames should now begin with episode numbers (or nil)
         .map { |fn| fn.match(/^\d+/) && Regexp.last_match(0) } \
+        # Remove nil elements
+        .compact \
         .map(&:to_i) \
         .sort
 
