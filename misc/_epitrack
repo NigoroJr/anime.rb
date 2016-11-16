@@ -14,6 +14,7 @@ flags=(
 '(-l --list)'{-l,--list}'[list watched series]'
 '(--list-all)--list-all[list all series]'
 '(-n --list-names)'{-n,--list-names}'[list only names]'
+'(-p --prune)'{-p,--prune}'[remove orphaned series]'
 '(-a --add)'{-a,--add}'[add a new episode]:files:_files'
 '(--db-file)--db-file[path to database file]:files:_files'
 '(-h --help)'{-h,--help}'[show help]'

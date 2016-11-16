@@ -28,6 +28,11 @@ OptionParser.new do |opt|
     opts[:add] = path
   end
 
+  opt.on('-p', '--prune',
+      'Remove orphaned series') do
+    opts[:prune] = true
+  end
+
   opt.on('--db-file=PATH',
       'Specify database file') do |val|
     opts[:db_file] = val
@@ -50,6 +55,18 @@ elsif opts[:list_all]
   exit 0
 elsif opts[:list_names]
   puts tracker.series.map(&:name)
+  exit 0
+elsif opts[:prune]
+  tracker.series.each do |s|
+    if !Dir.exist?(File.dirname(s.template))
+      print "'#{s.name}' doesn't exist. Delete? (y/N) "
+      if STDIN.readline.chomp =~ /^\s*[yY]/
+        tracker.delete(s)
+        puts "Deleted '#{s.name}'"
+      end
+    end
+  end
+  tracker.database.write!
   exit 0
 elsif opts[:add]
   name = ARGV.first

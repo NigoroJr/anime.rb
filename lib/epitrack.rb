@@ -52,6 +52,10 @@ class Epitrack
     @database.series.push(series)
   end
 
+  def delete(series)
+    @database.delete(series)
+  end
+
   def series
     @database.series
   end

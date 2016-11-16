@@ -39,5 +39,10 @@ class Epitrack
       return nil if idx.nil?
       @series[idx]
     end
+
+    def delete(series)
+      series_list = series.is_a?(Array) ? series : [series]
+      series_list.each { |s| @series.delete(s) }
+    end
   end
 end
