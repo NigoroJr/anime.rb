@@ -9,6 +9,8 @@ class Epitrack
   module Parser
     PLACEHOLDER = '{}'.freeze
     PLACEHOLDER_GLOB = '{*}'.freeze
+    # Parse file names as if these words (plus spaces around them) don't exist
+    IGNORE_WORDS = %w(RAW END).freeze
 
     module_function
 
@@ -27,9 +29,10 @@ class Epitrack
       return guess_template(filenames.first) if filenames.length < 2
 
       # Sometimes the name of the last episode is '42 END something.mp4'
-      has_end_in_template = filenames.any? { |fn| fn =~ /\d+\s*END\b/ }
+      pat = /(\d+)\s*\b(?:#{IGNORE_WORDS.join('|')})\b\s*/
+      has_end_in_template = filenames.any? { |fn| fn =~ pat }
       if has_end_in_template
-        filenames.map! { |fn| fn.sub(/(\d+)\s*END\b/, '\1') }
+        filenames.map! { |fn| fn.sub(pat, '\1') }
       end
 
       (fn1, fn2) = similar_two(filenames, 2)
