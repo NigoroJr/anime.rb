@@ -94,6 +94,31 @@ class Epitrack
       [template, ep_num, ep_num]
     end
 
+    # Finds the first and last episode numbers from a template.
+    #
+    # @param template [String] template that contains a "{}", where the
+    #   episode number is substituted into.
+    #
+    # @return [Integer, Integer] the first and last episode numbers.
+    def find_first_last(template)
+      raise "Template must contain a #{PLACEHOLDER}" unless template.include?(PLACEHOLDER)
+
+      pattern = Shellwords.escape(template) \
+        .sub(Shellwords.escape(Epitrack::Parser::PLACEHOLDER), '*') \
+        .sub(Shellwords.escape(Epitrack::Parser::PLACEHOLDER_GLOB), '*')
+
+      sorted_episode_numbers = Dir[pattern] \
+        # Remove everything up to the placeholder
+        .map { |f| f[template.index(Epitrack::Parser::PLACEHOLDER)..-1] } \
+        # Now numbers should be at the front
+        .map { |f| f.match(/^(\d+)/) && Regexp.last_match(1) } \
+        .compact \
+        .map(&:to_i) \
+        .sort
+
+      [sorted_episode_numbers.first, sorted_episode_numbers.last]
+    end
+
     private
 
     module_function

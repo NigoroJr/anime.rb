@@ -59,8 +59,15 @@ elsif opts[:add]
     exit 1
   end
 
-  dir = Shellwords.escape(opts[:add])
-  template, first_ep, last_ep = Epitrack::Parser.parse(Dir[File.join(dir, '*')])
+  if opts[:add].include?(Epitrack::Parser::PLACEHOLDER)
+    # /path/to/file{}*.mp4 is probably a mistake of /path/to/file{}{*}.mp4
+    template = opts[:add].sub('*', Epitrack::Parser::PLACEHOLDER_GLOB)
+    first_ep, last_ep = Epitrack::Parser.find_first_last(template)
+  else
+    dir = Shellwords.escape(opts[:add])
+    template, first_ep, last_ep = Epitrack::Parser.parse(Dir[File.join(dir, '*')])
+  end
+
   series = tracker.add(name, template, first_ep, last_ep)
 else
   name = ARGV.first
