@@ -29,7 +29,8 @@ class Epitrack
       return guess_template(filenames.first) if filenames.length < 2
 
       # Sometimes the name of the last episode is '42 END something.mp4'
-      pat = /(\d+)\s*\b(?:#{IGNORE_WORDS.join('|')})\b\s*/
+      # Change this to '42 something.mp4' (remove the " END" part)
+      pat = /(\d+)\s*\b(?:#{IGNORE_WORDS.join('|')})\b/
       has_end_in_template = filenames.any? { |fn| fn =~ pat }
       if has_end_in_template
         filenames.map! { |fn| fn.sub(pat, '\1') }
