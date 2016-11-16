@@ -99,12 +99,32 @@ class Epitrack
 
     # Returns the path to the next episode
     #
-    # @param digits [Integer] digits of the episode number.
+    # @param [Hash] opts the options when constructing the file path
+    # @option opts [Integer] :digits (2) digits in the episode number
+    # @option opts [Boolean] :expand_glob (true) expand {*} (glob placeholder)
     #
     # @return [String] the path to the next episode
-    def current_episode_path(digits = 2)
-      str = format '%0*i', digits, @current_ep
-      @template.sub(Epitrack::Parser::PLACEHOLDER, str)
+    def current_episode_path(opts = {})
+      opts[:digits] ||= 2
+      opts[:expand_glob] ||= true
+
+      str = format '%0*i', opts[:digits], @current_ep
+      path = @template.sub(Epitrack::Parser::PLACEHOLDER, str)
+
+      if opts[:expand_glob]
+        path = Shellwords.escape(path)
+        # PLACEHOLDER_GLOB in path is also escaped
+        pattern = path.sub(Shellwords.escape(Epitrack::Parser::PLACEHOLDER_GLOB), '*')
+        files = Dir[pattern]
+        if files.size != 1
+          STDERR.puts "Non-single candidates for #{pattern}:\n#{files.join("\n")}"
+          raise 'Ambiguous path'
+        end
+
+        path = files.first
+      end
+
+      path
     end
 
     # Watch the current episode

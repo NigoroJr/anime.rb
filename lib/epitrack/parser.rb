@@ -8,6 +8,7 @@ class Epitrack
   # series.
   module Parser
     PLACEHOLDER = '{}'.freeze
+    PLACEHOLDER_GLOB = '{*}'.freeze
 
     module_function
 
@@ -25,7 +26,13 @@ class Epitrack
 
       return guess_template(filenames.first) if filenames.length < 2
 
-      (fn1, fn2) = similar_two(filenames)
+      # Sometimes the name of the last episode is '42 END something.mp4'
+      has_end_in_template = filenames.any? { |fn| fn =~ /\d+\s*END\b/ }
+      if has_end_in_template
+        filenames.map! { |fn| fn.sub(/(\d+)\s*END\b/, '\1') }
+      end
+
+      (fn1, fn2) = similar_two(filenames, 2)
 
       if fn1.length != fn2.length
         raise "Filenames have different lengths (#{fn1.length}, #{fn2.length})"
@@ -42,6 +49,9 @@ class Epitrack
           flag = false
           template << PLACEHOLDER
           placeholder_idx = i
+
+          # Make the template foobar{}{*}baz.mp4 where {*} is for the 'END'
+          template << PLACEHOLDER_GLOB if has_end_in_template
         end
       end
 
@@ -103,7 +113,9 @@ class Epitrack
         next if a.length != b.length
 
         dist = Levenshtein.distance(a, b)
-        if dist < best_so_far && dist >= best_dist
+        if dist == best_dist
+          return [a, b]
+        elsif dist < best_so_far
           best_pair = [a, b]
           best_so_far = dist
         end
