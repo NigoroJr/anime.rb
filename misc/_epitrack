@@ -11,12 +11,12 @@ local -a flags
 
 series=( ${(f)"$( _call_program path epitrack -n )"} )
 flags=(
-'(-)'{-l,--list}'[list watched series]'
-'(-)--list-all[list all series]'
-'(-)'{-n,--list-names}'[list only names]'
-'(-)'{-a,--add}'[add a new episode]:files:_files'
-'(-)--db-file[path to database file]:files:_files'
-'(-)-h[show help]'
+'(-l --list)'{-l,--list}'[list watched series]'
+'(--list-all)--list-all[list all series]'
+'(-n --list-names)'{-n,--list-names}'[list only names]'
+'(-a --add)'{-a,--add}'[add a new episode]:files:_files'
+'(--db-file)--db-file[path to database file]:files:_files'
+'(-h --help)'{-h,--help}'[show help]'
 )
 
 _arguments \
