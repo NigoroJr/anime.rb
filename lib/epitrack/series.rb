@@ -118,10 +118,8 @@ class Epitrack
         pattern = path.sub(escaped_ph, '*')
         files = Dir[pattern]
         if files.size != 1
-          STDERR.puts <<-EOS.undent
-          Non-single candidates for #{pattern}:
-          #{files.join("\n")}
-          EOS
+          STDERR.puts "Non-single candidates for #{pattern}:"
+          STDERR.puts files.join("\n")
           raise 'Ambiguous path'
         end
 
